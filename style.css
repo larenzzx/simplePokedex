@@ -11,6 +11,10 @@ body {
   color: #333;
 }
 
+.hidden {
+  display: none;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;

@@ -9,16 +9,118 @@ let allPokemonData = [];
 let offset = 0;
 let limit = 12;
 let page = 1;
+let isSearchMode = false;
+let searchResults = [];
 
 pageInfo.textContent = `Page ${page}`;
 
+// Debounce function to prevent too many API calls
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Search Pokemon by name via API
+async function searchPokemonByName(searchTerm) {
+  if (!searchTerm.trim()) {
+    isSearchMode = false;
+    fetchPokemon();
+    updatePaginationVisibility();
+    return;
+  }
+
+  const loading = document.getElementById("loading");
+  loading.classList.remove("hidden");
+
+  try {
+    isSearchMode = true;
+    // Try to fetch the specific Pokemon
+    const response = await fetch(
+      `https://pokeapi.co/api/v2/pokemon/${searchTerm.toLowerCase()}`
+    );
+
+    if (response.ok) {
+      const pokemon = await response.json();
+      searchResults = [pokemon];
+      renderPokemon(searchResults);
+    } else {
+      // If exact match fails, search through all Pokemon names
+      await searchAllPokemonNames(searchTerm);
+    }
+  } catch (error) {
+    console.error("Search error:", error);
+    await searchAllPokemonNames(searchTerm);
+  } finally {
+    loading.classList.add("hidden");
+    updatePaginationVisibility();
+  }
+}
+
+// Fallback: search through all Pokemon names (cached)
+let allPokemonNames = null;
+
+async function searchAllPokemonNames(searchTerm) {
+  try {
+    // Cache all Pokemon names on first search
+    if (!allPokemonNames) {
+      const response = await fetch(
+        "https://pokeapi.co/api/v2/pokemon?limit=1500"
+      );
+      const data = await response.json();
+      allPokemonNames = data.results;
+    }
+
+    // Filter matching names
+    const matches = allPokemonNames.filter((pokemon) =>
+      pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Limit results to prevent lag (show first 20 matches)
+    const limitedMatches = matches.slice(0, 20);
+
+    // Fetch detailed data for matches
+    const pokemonPromises = limitedMatches.map((pokemon) =>
+      fetch(pokemon.url).then((res) => res.json())
+    );
+
+    searchResults = await Promise.all(pokemonPromises);
+    renderPokemon(searchResults);
+
+    if (searchResults.length === 0) {
+      pokemonContainer.innerHTML = "<p>No Pokemon found</p>";
+    }
+  } catch (error) {
+    console.error("Error searching all Pokemon:", error);
+    pokemonContainer.innerHTML = "<p>Search error occurred</p>";
+  }
+}
+
+// Debounced search function
+const debouncedSearch = debounce(searchPokemonByName, 500);
+
 input.addEventListener("input", (e) => {
-  const search = e.target.value.trim().toLowerCase();
-  const filtered = allPokemonData.filter((pokemon) =>
-    pokemon.name.toLowerCase().includes(search)
-  );
-  renderPokemon(filtered);
+  const search = e.target.value.trim();
+  debouncedSearch(search);
 });
+
+function updatePaginationVisibility() {
+  if (isSearchMode) {
+    prev.style.display = "none";
+    next.style.display = "none";
+    pageInfo.textContent = "Search Results";
+  } else {
+    prev.style.display = "inline-block";
+    next.style.display = "inline-block";
+    pageInfo.textContent = `Page ${page}`;
+  }
+}
 
 function renderPokemon(pokemonList) {
   pokemonContainer.innerHTML = "";
@@ -40,7 +142,9 @@ function renderPokemon(pokemonList) {
     pokemonCardHeader.className = "pokemon-card-header";
     const pokemonImage = document.createElement("img");
     pokemonImage.className = "pokemon-image";
-    pokemonImage.src = data.sprites.other.dream_world.front_default;
+    pokemonImage.src =
+      data.sprites.other.dream_world.front_default ||
+      data.sprites.front_default;
     pokemonCardHeader.appendChild(pokemonImage);
 
     // card body
@@ -56,7 +160,6 @@ function renderPokemon(pokemonList) {
     const pokemonTypes = document.createElement("div");
     pokemonTypes.className = "pokemon-types";
 
-    // pokemonType.className = "pokemon-type";
     const types = data.types.map((type) => type.type.name);
 
     types.forEach((type) => {
@@ -115,7 +218,6 @@ function fetchPokemon() {
       return res.json();
     })
     .then((data) => {
-      // loading.classList.add("hidden");
       const pokemonData = data.results.map((pokemon) =>
         fetch(pokemon.url).then((res) => res.json())
       );
@@ -131,6 +233,7 @@ function fetchPokemon() {
 }
 
 next.addEventListener("click", () => {
+  if (isSearchMode) return; // Disable pagination in search mode
   offset += limit;
   page++;
   pageInfo.textContent = `Page ${page}`;
@@ -142,6 +245,8 @@ next.addEventListener("click", () => {
 });
 
 prev.addEventListener("click", () => {
+  if (isSearchMode) return; // Disable pagination in search mode
+  if (offset <= 0) return; // Prevent going to negative offset
   offset -= limit;
   page--;
   pageInfo.textContent = `Page ${page}`;

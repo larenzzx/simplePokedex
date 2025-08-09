@@ -259,6 +259,10 @@ body {
 .pokemon-type.bug {
   background: linear-gradient(135deg, #b5a5dcff, #397690ff);
 }
+
+.pokemon-type.flying {
+  background: linear-gradient(135deg, #dca5bcff, #397690ff);
+}
 .pokemon-type.poison {
   background: linear-gradient(135deg, #a040a0, #c183c1);
 }

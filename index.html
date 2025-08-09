@@ -1,27 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pokédex</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div class="container">
-        <header class="header">
-            <h1 class="logo">Pokédex</h1>
-            <p class="subtitle">Discover and explore Pokémon</p>
-        </header>
+      <header class="header">
+        <h1 class="logo">Pokédex</h1>
+        <p class="subtitle">Discover and explore Pokémon</p>
+      </header>
 
-        <section class="search-section">
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="Search Pokémon by name...">
-            </div>
-        </section>
+      <section class="search-section">
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search Pokémon by name..."
+          />
+        </div>
+      </section>
 
-        <p id="loading" class="loadingPokemon hidden">Loading...</p>
-        <main class="pokemon-grid">
-            <!-- <div class="pokemon-card">
+      <p id="loading" class="loadingPokemon hidden">Loading...</p>
+      <main class="pokemon-grid">
+        <!-- <div class="pokemon-card">
                 <div class="pokemon-id"></div>
                 <div class="pokemon-card-header">
                     <img src="" alt="">
@@ -47,19 +51,19 @@
                     </div>
                 </div>
             </div> -->
-                            
-        </main>
+      </main>
 
-        <nav class="pagination">
-            <button class="pagination-btn" id="prevBtn">Previous</button>
-            <div class="page-info">
-                <span id="pageInfo"></span>
-            </div>
-            <button class="pagination-btn" id="nextBtn">Next</button>
-        </nav>
+      <nav class="pagination">
+        <button class="pagination-btn" id="prevBtn">Previous</button>
+        <div class="page-info">
+          <span id="pageInfo"></span>
+        </div>
+        <button class="pagination-btn" id="nextBtn">Next</button>
+      </nav>
     </div>
 
-    <script src="script.js"></script>
+    <!-- <script src="script.js"></script> -->
     <!-- <script src="test.js"></script> -->
-</body>
+    <script src="async.js"></script>
+  </body>
 </html>
